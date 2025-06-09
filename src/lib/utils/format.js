@@ -89,6 +89,27 @@ export function formatTimeAgo(timestamp) {
 	return formatDate(timestamp);
 }
 
+// Format time remaining until a future timestamp
+export function formatTimeRemaining(timestamp) {
+	if (!timestamp) return '—';
+	
+	const now = new Date();
+	const future = new Date(timestamp);
+	const diffMs = future - now;
+	
+	if (diffMs <= 0) return 'Expired';
+	
+	const diffMins = Math.floor(diffMs / 60000);
+	const diffHours = Math.floor(diffMins / 60);
+	const diffDays = Math.floor(diffHours / 24);
+	
+	if (diffDays > 0) return `${diffDays}d ${diffHours % 24}h remaining`;
+	if (diffHours > 0) return `${diffHours}h ${diffMins % 60}m remaining`;
+	if (diffMins > 0) return `${diffMins}m remaining`;
+	
+	return 'Less than 1m remaining';
+}
+
 // Get status color class
 export function getStatusColor(status) {
 	switch (status?.toLowerCase()) {
@@ -102,6 +123,12 @@ export function getStatusColor(status) {
 			return 'text-error-600 bg-error-100';
 		case 'sold':
 			return 'text-warning-600 bg-warning-100';
+		case 'cooldown':
+			return 'text-warning-600 bg-warning-100';
+		case 'processing':
+			return 'text-primary-600 bg-primary-100';
+		case 'deposited':
+			return 'text-success-600 bg-success-100';
 		default:
 			return 'text-gray-600 bg-gray-100';
 	}
