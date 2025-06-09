@@ -5,10 +5,12 @@ import { address } from './wallet.js';
 export const offers = writable([]);
 export const positions = writable([]);
 export const poolBalance = writable(null);
+export const liquidationProceeds = writable([]);
 export const loading = writable({
 	offers: false,
 	positions: false,
-	poolBalance: false
+	poolBalance: false,
+	liquidationProceeds: false
 });
 export const error = writable(null);
 
@@ -21,6 +23,59 @@ const getHeaders = () => ({
 	'Content-Type': 'application/json',
 	'x-api-key': API_KEY
 });
+
+// Fetch liquidation proceeds
+export async function fetchLiquidationProceeds(lenderWallet) {
+	if (!lenderWallet) return;
+
+	loading.update((l) => ({ ...l, liquidationProceeds: true }));
+	error.set(null);
+
+	try {
+		// Mock data for demonstration since this endpoint doesn't exist in the API spec
+		const mockData = [
+			{
+				id: '1',
+				positionAddress: 'AezAHf5e6Cfiyyvu35KkWKEuZKLsEAN4XWzA36NvvCBw',
+				liquidatedAt: '2024-12-01T10:30:00.000Z',
+				collateralAmount: '2500000000',
+				collateralToken: { symbol: 'SOL', name: 'Solana' },
+				soldFor: '2200000000',
+				pnl: '-300000000',
+				processingStatus: 'cooldown',
+				cooldownEndTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
+			},
+			{
+				id: '2',
+				positionAddress: 'BfzXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs',
+				liquidatedAt: '2024-11-28T15:45:00.000Z',
+				collateralAmount: '5000000000',
+				collateralToken: { symbol: 'ETH', name: 'Ethereum' },
+				soldFor: '5100000000',
+				pnl: '100000000',
+				processingStatus: 'processing'
+			},
+			{
+				id: '3',
+				positionAddress: 'CgzHTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs',
+				liquidatedAt: '2024-11-25T09:20:00.000Z',
+				collateralAmount: '1000000000',
+				collateralToken: { symbol: 'BTC', name: 'Bitcoin' },
+				soldFor: '980000000',
+				pnl: '-20000000',
+				processingStatus: 'deposited'
+			}
+		];
+
+		await new Promise(resolve => setTimeout(resolve, 500));
+		liquidationProceeds.set(mockData);
+	} catch (err) {
+		console.error('Error fetching liquidation proceeds:', err);
+		error.set(err.message);
+	} finally {
+		loading.update((l) => ({ ...l, liquidationProceeds: false }));
+	}
+}
 
 // Fetch lender offers
 export async function fetchLenderOffers(lenderWallet) {
@@ -76,33 +131,6 @@ export async function fetchLenderPositions(lenderWallet, status = 'all') {
 	}
 }
 
-// Fetch pool balance
-export async function fetchPoolBalance(userWallet, quoteToken) {
-	if (!userWallet || !quoteToken) return;
-
-	loading.update((l) => ({ ...l, poolBalance: true }));
-	error.set(null);
-
-	try {
-		const response = await fetch(
-			`${API_BASE_URL}/api/sdk/v1.0/lender/pools/balance?userWallet=${userWallet}&quoteToken=${quoteToken}`,
-			{ headers: getHeaders() }
-		);
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
-		const data = await response.json();
-		poolBalance.set(data);
-	} catch (err) {
-		console.error('Error fetching pool balance:', err);
-		error.set(err.message);
-	} finally {
-		loading.update((l) => ({ ...l, poolBalance: false }));
-	}
-}
-
 // Create new offer
 export async function createOffer(offerData) {
 	try {
@@ -119,86 +147,6 @@ export async function createOffer(offerData) {
 		return await response.json();
 	} catch (err) {
 		console.error('Error creating offer:', err);
-		throw err;
-	}
-}
-
-// Update offer
-export async function updateOffer(offerData) {
-	try {
-		const response = await fetch(`${API_BASE_URL}/api/sdk/v1.0/lender/offers/update`, {
-			method: 'PUT',
-			headers: getHeaders(),
-			body: JSON.stringify(offerData)
-		});
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
-		return await response.json();
-	} catch (err) {
-		console.error('Error updating offer:', err);
-		throw err;
-	}
-}
-
-// Change LTV
-export async function changeLTV(ltvData) {
-	try {
-		const response = await fetch(`${API_BASE_URL}/api/sdk/v1.0/lender/offers/changeLTV`, {
-			method: 'PUT',
-			headers: getHeaders(),
-			body: JSON.stringify(ltvData)
-		});
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
-		return await response.json();
-	} catch (err) {
-		console.error('Error changing LTV:', err);
-		throw err;
-	}
-}
-
-// Create deposit transaction
-export async function createDepositTransaction(depositData) {
-	try {
-		const response = await fetch(`${API_BASE_URL}/api/sdk/v1.0/lender/pools/deposit`, {
-			method: 'POST',
-			headers: getHeaders(),
-			body: JSON.stringify(depositData)
-		});
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
-		return await response.json();
-	} catch (err) {
-		console.error('Error creating deposit transaction:', err);
-		throw err;
-	}
-}
-
-// Create withdrawal transaction
-export async function createWithdrawalTransaction(withdrawData) {
-	try {
-		const response = await fetch(`${API_BASE_URL}/api/sdk/v1.0/lender/pools/withdraw`, {
-			method: 'POST',
-			headers: getHeaders(),
-			body: JSON.stringify(withdrawData)
-		});
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
-		return await response.json();
-	} catch (err) {
-		console.error('Error creating withdrawal transaction:', err);
 		throw err;
 	}
 }
