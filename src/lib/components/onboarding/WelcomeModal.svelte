@@ -127,14 +127,25 @@
 		dispatch('skip');
 		close();
 	}
+	
+	function handleBackdropClick() {
+		close();
+	}
+	
+	function handleBackdropKeydown(event) {
+		if (event.key === 'Escape') {
+			close();
+		}
+	}
 </script>
 
 {#if isOpen}
 	<!-- Modal Backdrop -->
-	<div 
-		class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+	<button
+		class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 cursor-default"
 		transition:fade={{ duration: 200 }}
-		on:click={close}
+		on:click={handleBackdropClick}
+		on:keydown={handleBackdropKeydown}
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="welcome-title"
@@ -144,6 +155,7 @@
 			class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden relative"
 			transition:fly={{ y: 50, duration: 300 }}
 			on:click|stopPropagation
+			role="document"
 		>
 			<!-- Close Button -->
 			<button
@@ -275,5 +287,5 @@
 				</div>
 			</div>
 		</div>
-	</div>
+	</button>
 {/if}
