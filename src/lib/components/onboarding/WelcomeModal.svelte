@@ -12,7 +12,6 @@
 		AlertTriangle,
 		X,
 		Play,
-		FileText,
 		Users
 	} from 'lucide-svelte';
 	
