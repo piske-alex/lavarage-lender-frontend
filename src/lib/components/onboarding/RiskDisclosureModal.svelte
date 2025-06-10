@@ -99,22 +99,35 @@
 	function openExternalLink(url) {
 		window.open(url, '_blank', 'noopener,noreferrer');
 	}
+	
+	function handleBackdropClick() {
+		close();
+	}
+	
+	function handleBackdropKeydown(event) {
+		if (event.key === 'Escape') {
+			close();
+		}
+	}
 </script>
 
 {#if isOpen}
 	<!-- Modal Backdrop -->
-	<div 
-		class="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"
+	<button
+		class="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4 cursor-default"
 		transition:fade={{ duration: 200 }}
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="risk-disclosure-title"
+		on:click={handleBackdropClick}
+		on:keydown={handleBackdropKeydown}
 	>
 		<!-- Modal Content -->
 		<div 
 			class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
 			transition:fly={{ y: 50, duration: 300 }}
 			on:click|stopPropagation
+			role="document"
 		>
 			<!-- Header -->
 			<div class="bg-red-50 border-b border-red-200 px-6 py-4 relative">
@@ -301,5 +314,5 @@
 				</div>
 			</div>
 		</div>
-	</div>
+	</button>
 {/if}
